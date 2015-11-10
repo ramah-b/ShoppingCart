@@ -282,17 +282,20 @@ public class onlineServlet extends HttpServlet {
 				//start a user session
 				
 				ArrayList<LineItems> l_bean = new ArrayList<LineItems>();
-				l_bean = (ArrayList<LineItems>) session.getAttribute("l_bean");
-				
+				if (session.getAttribute("l_bean") != null)
+				{
+					l_bean = (ArrayList<LineItems>) session.getAttribute("l_bean");
 				if (l_bean != null || !(l_bean.isEmpty())){
 					for (int i=0; i<l_bean.size(); i++){
 						l_bean.get(i).setBuyer_id((int)buyerUser.getBuyerId());
 					}
+				}
+				}
 				session.setAttribute("buyerUser", buyerUser);
 				
 				session.setAttribute("l_bean", l_bean);
 				request.setAttribute("productList", productList);	
-				}
+				
 			
 			
 			
@@ -549,10 +552,13 @@ public class onlineServlet extends HttpServlet {
 		Buyer buyer = (Buyer)session.getAttribute("buyerUser");
 		String username = buyer.getName();
 		session.removeAttribute("buyerUser");
-		request.removeAttribute("l_bean");
+		ArrayList<LineItems> l_bean = new ArrayList<LineItems>();
+		l_bean = (ArrayList<LineItems>) session.getAttribute("l_bean");
+		l_bean = null;
+		session.setAttribute("l_bean", l_bean);
 		try {
 			request.setAttribute("username", username);
-			getServletContext().getRequestDispatcher("/index.jsp").forward(request, response);
+			getServletContext().getRequestDispatcher("/index.html").forward(request, response);
 		} catch (ServletException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
