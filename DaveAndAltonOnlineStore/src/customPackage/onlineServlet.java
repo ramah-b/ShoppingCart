@@ -2,6 +2,7 @@ package customPackage;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,7 @@ import javax.servlet.http.HttpSession;
 import model.Buyer;
 import model.LineItm;
 import model.Product;
+import model.Review;
 
 
 /**
@@ -63,12 +65,21 @@ public class onlineServlet extends HttpServlet {
 			processPurchaseHistory(request, response);
 		else if (action.equals("logout"))
 			processLogout(request, response);
-		
+		else if (action.equals("newProductJSP"))
+			processAddNewProductJSP(request, response);
+		else if (action.equals("newProduct"))
+			processAddNewProduct(request, response);
+		else if (action.equals("viewAll"))
+			processViewAll(request, response);
+		else if (action.equals("review"))
+			processReview(request, response);
+		else if (action.equals("removeProduct"))
+			processRemoveProduct(request, response);
 		
 	
 	}
 
-	
+
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		//System.out.println("in dopost");
@@ -105,6 +116,7 @@ public class onlineServlet extends HttpServlet {
 			newBuyer.setUsername(username);
 			newBuyer.setPassword(password);
 			newBuyer.setEmail(email);
+			newBuyer.setAdminFlag("0");
 			
 			BuyerDB.insert(newBuyer);
 			
@@ -200,16 +212,22 @@ public class onlineServlet extends HttpServlet {
 				productList = null;
 			else 
 			{
+				BigDecimal bd = new BigDecimal(0);
+				int j=0;
 				for (int i =0; i< p.size(); i++){
 					
-					Products temp_p = new Products();
-					temp_p.setProduct_id((int)p.get(i).getProductId());
-					temp_p.setName(p.get(i).getName());
-					temp_p.setDescription(p.get(i).getDescription());
-					temp_p.setPrice(p.get(i).getPrice().doubleValue());
-					temp_p.setCategory(p.get(i).getCategory());
 					
-					productList.add(i, temp_p);
+					Products temp_p = new Products();
+					if (p.get(i).getQuantity().compareTo(bd) == 1) {
+						temp_p.setProduct_id((int) p.get(i).getProductId());
+						temp_p.setName(p.get(i).getName());
+						temp_p.setDescription(p.get(i).getDescription());
+						temp_p.setPrice(p.get(i).getPrice().doubleValue());
+						temp_p.setCategory(p.get(i).getCategory());
+					
+						productList.add(j, temp_p);
+						j++;
+					}
 					
 					
 				}
@@ -245,17 +263,21 @@ public class onlineServlet extends HttpServlet {
 				productList = null;
 			else 
 			{
+				BigDecimal bd = new BigDecimal(0);
+				int j=0;
 				for (int i =0; i< p.size(); i++){
 					
 					Products temp_p = new Products();
+					if (p.get(i).getQuantity().compareTo(bd) == 1){
 					temp_p.setProduct_id((int)p.get(i).getProductId());
 					temp_p.setName(p.get(i).getName());
 					temp_p.setDescription(p.get(i).getDescription());
 					temp_p.setPrice(p.get(i).getPrice().doubleValue());
 					temp_p.setCategory(p.get(i).getCategory());
 					
-					productList.add(i, temp_p);
-					
+					productList.add(j, temp_p);
+					j++;
+					}
 					
 				}
 			}
@@ -278,6 +300,11 @@ public class onlineServlet extends HttpServlet {
 				
 			else 
 			{
+				String adminFlag;
+				if (buyerUser.getAdminFlag().equals("0"))
+					 adminFlag = "no";
+				else
+					adminFlag= "yes";
 				
 				//start a user session
 				
@@ -292,19 +319,18 @@ public class onlineServlet extends HttpServlet {
 				}
 				}
 				session.setAttribute("buyerUser", buyerUser);
-				
+				request.setAttribute("adminFlag", adminFlag);
 				session.setAttribute("l_bean", l_bean);
 				request.setAttribute("productList", productList);	
-				
-			
-			
 			
 		
 			getServletContext()
 			.getRequestDispatcher("/productList.jsp")
 			.forward(request, response);
-			}
+			
+			
 		
+	}
 	}
 	
 	
@@ -391,6 +417,9 @@ public class onlineServlet extends HttpServlet {
 		l_bean = (ArrayList<LineItems>) session.getAttribute("l_bean");
 		Buyer buyerUser = (Buyer) session.getAttribute("buyerUser");
 		
+		DecimalFormat df = new DecimalFormat();
+		df.setMaximumFractionDigits(2);
+		
 			Product p = ProductDB.getProduct(product_id);
 			
 			if(p == null)
@@ -409,7 +438,7 @@ public class onlineServlet extends HttpServlet {
 				lineItemBean.setPrice(productBean.getPrice());
 				lineItemBean.setProduct(productBean);
 				lineItemBean.setQuantity(quantity);
-				lineItemBean.setTotal_price(quantity*productBean.getPrice());
+				lineItemBean.setTotal_price((quantity*productBean.getPrice()));
 				if (buyerUser != null)
 				lineItemBean.setBuyer_id((int)buyerUser.getBuyerId());
 				
@@ -420,8 +449,7 @@ public class onlineServlet extends HttpServlet {
 			for (int i =0; i< l_bean.size(); i++){
 				total += l_bean.get(i).getTotal_price();
 			}
-			DecimalFormat df = new DecimalFormat();
-			df.setMaximumFractionDigits(2);
+			
 			String totalStr = df.format(total);
 		
 			
@@ -452,7 +480,7 @@ public class onlineServlet extends HttpServlet {
 		l_bean = (ArrayList<LineItems>) session.getAttribute("l_bean");
 		Buyer buyerUser = (Buyer) session.getAttribute("buyerUser");
 		ArrayList<LineItm> lineItemList = new ArrayList<LineItm>();
-			
+		String message=null;
 			if(l_bean == null || l_bean.isEmpty())
 				l_bean = null;
 			else 
@@ -464,6 +492,8 @@ public class onlineServlet extends HttpServlet {
 					BigDecimal bd = new BigDecimal(l_bean.get(i).getPrice());
 					l.setPrice(bd);
 					BigDecimal bd2 = new BigDecimal(l_bean.get(i).getTotal_price());
+					BigDecimal multiplier = new BigDecimal(1.06);
+					bd2= bd2.multiply(multiplier);
 					l.setTotalprice(bd2);
 					BigDecimal bd3 = new BigDecimal(l_bean.get(i).getQuantity());
 					l.setQuantity(bd3);
@@ -478,8 +508,12 @@ public class onlineServlet extends HttpServlet {
 					if (pQuant.compareTo(bd3) != -1){
 						pQuant = pQuant.subtract(bd3);
 						p.setQuantity(pQuant);
+						
 					}else {
-						l.setQuantity(bd3);
+						l.setQuantity(pQuant);
+						pQuant = pQuant.subtract(pQuant);
+						p.setQuantity(pQuant);
+						message = "Only " + pQuant + " are in stock!" + bd3.subtract(pQuant) + " will not be shipped!";
 					}
 					
 					
@@ -498,7 +532,7 @@ public class onlineServlet extends HttpServlet {
 
 			session.setAttribute("l_bean", l_bean);
 			request.setAttribute("lineItemsList", lineItemList);
-			
+			request.setAttribute("message", message);
 		
 			
 		
@@ -566,5 +600,121 @@ public class onlineServlet extends HttpServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+
+	private void processAddNewProductJSP(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		getServletContext()
+		.getRequestDispatcher("/addProduct.jsp")
+		.forward(request, response);
+		
+	}
+
+	
+	private void processAddNewProduct(HttpServletRequest request,
+			HttpServletResponse response)throws ServletException, IOException{
+		
+		String name= request.getParameter("name");
+		String description = request.getParameter("description");
+		String price = request.getParameter("price");
+		 BigDecimal priceBD = new BigDecimal(price.replaceAll(",", ""));
+		String quantity = request.getParameter("quantity");
+		 BigDecimal quantityBD = new BigDecimal(quantity.replaceAll(",", ""));
+		String category = request.getParameter("category");
+		
+		Product p = new Product();
+		p.setName(name);
+		p.setDescription(description);
+		p.setPrice(priceBD);
+		p.setQuantity(quantityBD);
+		p.setCategory(category);
+		
+		ProductDB.insert(p);
+		
+		getServletContext()
+		.getRequestDispatcher("/addProduct.jsp")
+		.forward(request, response);
+		
+	}
+	
+
+	private void processViewAll(HttpServletRequest request,
+			HttpServletResponse response)throws ServletException, IOException{
+		ArrayList<LineItm> l_bean = new ArrayList<LineItm>();
+		double total = 0;
+		String totalStr="";
+		HttpSession session = request.getSession();
+		
+		
+			List<LineItm> l= (List<LineItm>) LineItemDB.getLineItems();
+			if(l == null || l.isEmpty())
+				l_bean = null;
+			
+			else{
+				
+			for (int i=0; i<l.size(); i++){
+			
+				l_bean.add(l.get(i));
+				total += l.get(i).getTotalprice().doubleValue();
+				}
+				DecimalFormat df = new DecimalFormat();
+				df.setMaximumFractionDigits(2);
+				totalStr = df.format(total);
+			}
+			
+			
+			
+			request.setAttribute("lineItemsList", l_bean);
+			request.setAttribute("total", totalStr);
+			
+			getServletContext()
+			.getRequestDispatcher("/shoppingHistory.jsp")
+			.forward(request, response);
+		
+	}
+	
+	
+
+	private void processReview(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		String review= request.getParameter("review");
+		String stars = request.getParameter("stars");
+		BigDecimal starsBD = new BigDecimal(stars.replaceAll(",", ""));
+		String product_id = request.getParameter("product_id");
+		String username = request.getParameter("buyer_username");
+		
+		Product p = ProductDB.getProduct(Long.parseLong(product_id));
+		Buyer b = BuyerDB.selectBuyerUsername(username);
+		Review r = new Review();
+		r.setText(review);
+		r.setStars(starsBD);
+		r.setBuyer(b);
+		r.setProduct(p);
+		Date d = new Date();
+		r.setReviewDate(d.toString());
+		
+		ReviewDB.insert(r);
+		
+		getServletContext()
+		.getRequestDispatcher("/productDetails?product_id="+ product_id + "&action=details")
+		.forward(request, response);
+		
+	}
+	private void processRemoveProduct(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		
+		String product_id = request.getParameter("product_id");
+		
+		
+		Product p = ProductDB.getProduct(Long.parseLong(product_id));
+		BigDecimal bd = new BigDecimal(0);
+		p.setQuantity(bd);
+		ProductDB.update(p);
+		
+		getServletContext()
+		.getRequestDispatcher("/productDetails?product_id="+ product_id + "&action=details")
+		.forward(request, response);
+		
 	}
 }

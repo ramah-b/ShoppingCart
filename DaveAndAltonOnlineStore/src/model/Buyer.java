@@ -10,7 +10,7 @@ import java.util.List;
  * 
  */
 @Entity
-@Table(name="BUYERS", schema= "TESTUSERDB")
+@Table(name="BUYERS", schema = "TESTUSERDB")
 @NamedQuery(name="Buyer.findAll", query="SELECT b FROM Buyer b")
 public class Buyer implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -20,6 +20,9 @@ public class Buyer implements Serializable {
 	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="BUYERS_BUYERID_GENERATOR")
 	@Column(name="BUYER_ID")
 	private long buyerId;
+
+	@Column(name="ADMIN_FLAG")
+	private String adminFlag;
 
 	private String email;
 
@@ -33,6 +36,10 @@ public class Buyer implements Serializable {
 	@OneToMany(mappedBy="buyer")
 	private List<LineItm> lineItms;
 
+	//bi-directional many-to-one association to Review
+	@OneToMany(mappedBy="buyer")
+	private List<Review> reviews;
+
 	public Buyer() {
 	}
 
@@ -42,6 +49,14 @@ public class Buyer implements Serializable {
 
 	public void setBuyerId(long buyerId) {
 		this.buyerId = buyerId;
+	}
+
+	public String getAdminFlag() {
+		return this.adminFlag;
+	}
+
+	public void setAdminFlag(String adminFlag) {
+		this.adminFlag = adminFlag;
 	}
 
 	public String getEmail() {
@@ -96,6 +111,28 @@ public class Buyer implements Serializable {
 		lineItm.setBuyer(null);
 
 		return lineItm;
+	}
+
+	public List<Review> getReviews() {
+		return this.reviews;
+	}
+
+	public void setReviews(List<Review> reviews) {
+		this.reviews = reviews;
+	}
+
+	public Review addReview(Review review) {
+		getReviews().add(review);
+		review.setBuyer(this);
+
+		return review;
+	}
+
+	public Review removeReview(Review review) {
+		getReviews().remove(review);
+		review.setBuyer(null);
+
+		return review;
 	}
 
 }

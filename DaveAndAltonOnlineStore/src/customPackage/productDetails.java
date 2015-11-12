@@ -2,6 +2,8 @@ package customPackage;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import javax.servlet.ServletException;
@@ -15,6 +17,7 @@ import java.math.BigDecimal;
 
 import model.LineItm;
 import model.Product;
+import model.Review;
 
 /**
  * Servlet implementation class productDetails
@@ -73,14 +76,39 @@ public class productDetails extends HttpServlet {
 					productBean.setDescription(p.getDescription());
 					productBean.setPrice(p.getPrice().doubleValue());
 					productBean.setCategory(p.getCategory());
-					//productBean.setQuantity(p.getQuantity().intValue());
+					productBean.setQuantity(p.getQuantity().intValueExact());
 	
 			}
+			
+			List<Review> r = ReviewDB.getReviews(p);
+			ArrayList<Review> reviewList = new ArrayList<Review>();
+			if(r == null || r.isEmpty())
+				reviewList = null;
+			else 
+			{
+				for (int i =0; i< r.size(); i++){
+					
+					
+					Review temp_r = new Review();
+					
+						temp_r.setReviewId((int) r.get(i).getReviewId());
+						temp_r.setText(r.get(i).getText());
+						temp_r.setStars(r.get(i).getStars());
+						temp_r.setReviewDate(r.get(i).getReviewDate());
+						temp_r.setBuyer(r.get(i).getBuyer());
+						temp_r.setProduct(r.get(i).getProduct());
+					
+						reviewList.add(i, temp_r);
+						
+					}
+					
+					
+				}
 			
 		
 			
 			request.setAttribute("productBean", productBean);
-		
+			request.setAttribute("reviewList", reviewList);
 			getServletContext()
 			.getRequestDispatcher("/productDetails.jsp")
 			.forward(request, response);

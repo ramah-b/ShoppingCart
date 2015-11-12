@@ -11,7 +11,7 @@ import java.util.List;
  * 
  */
 @Entity
-@Table(name="PRODUCTS", schema= "TESTUSERDB")
+@Table(name="PRODUCTS", schema = "TESTUSERDB")
 @NamedQuery(name="Product.findAll", query="SELECT p FROM Product p")
 public class Product implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -35,6 +35,10 @@ public class Product implements Serializable {
 	//bi-directional many-to-one association to LineItm
 	@OneToMany(mappedBy="product")
 	private List<LineItm> lineItms;
+
+	//bi-directional many-to-one association to Review
+	@OneToMany(mappedBy="product")
+	private List<Review> reviews;
 
 	public Product() {
 	}
@@ -107,6 +111,28 @@ public class Product implements Serializable {
 		lineItm.setProduct(null);
 
 		return lineItm;
+	}
+
+	public List<Review> getReviews() {
+		return this.reviews;
+	}
+
+	public void setReviews(List<Review> reviews) {
+		this.reviews = reviews;
+	}
+
+	public Review addReview(Review review) {
+		getReviews().add(review);
+		review.setProduct(this);
+
+		return review;
+	}
+
+	public Review removeReview(Review review) {
+		getReviews().remove(review);
+		review.setProduct(null);
+
+		return review;
 	}
 
 }

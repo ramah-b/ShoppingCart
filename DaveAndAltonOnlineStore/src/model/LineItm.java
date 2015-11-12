@@ -10,7 +10,7 @@ import java.math.BigDecimal;
  * 
  */
 @Entity
-@Table(name="LINE_ITMS", schema= "TESTUSERDB")
+@Table(name="LINE_ITMS", schema = "TESTUSERDB")
 @NamedQuery(name="LineItm.findAll", query="SELECT l FROM LineItm l")
 public class LineItm implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -27,15 +27,15 @@ public class LineItm implements Serializable {
 
 	private BigDecimal totalprice;
 
-	//bi-directional many-to-one association to Product
-	@ManyToOne
-	@JoinColumn(name="PRODUCT_ID")
-	private Product product;
-
 	//bi-directional many-to-one association to Buyer
 	@ManyToOne
 	@JoinColumn(name="BUYER_ID")
 	private Buyer buyer;
+
+	//bi-directional many-to-one association to Product
+	@ManyToOne
+	@JoinColumn(name="PRODUCT_ID")
+	private Product product;
 
 	public LineItm() {
 	}
@@ -72,20 +72,20 @@ public class LineItm implements Serializable {
 		this.totalprice = totalprice;
 	}
 
-	public Product getProduct() {
-		return this.product;
-	}
-
-	public void setProduct(Product product) {
-		this.product = product;
-	}
-
 	public Buyer getBuyer() {
 		return this.buyer;
 	}
 
 	public void setBuyer(Buyer buyer) {
 		this.buyer = buyer;
+	}
+
+	public Product getProduct() {
+		return this.product;
+	}
+
+	public void setProduct(Product product) {
+		this.product = product;
 	}
 
 }

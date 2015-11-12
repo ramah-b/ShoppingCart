@@ -1,76 +1,42 @@
-<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-	pageEncoding="ISO-8859-1"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>Dave & Alton Online Store</title>
-<link
-	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"
-	integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ=="
-	crossorigin="anonymous" rel="stylesheet">
-<!-- Optional theme -->
-<link rel="stylesheet"
-	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css"
-	integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX"
-	crossorigin="anonymous">
-<!-- Bootstrap core CSS -->
-<link rel="stylesheet"
-	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"
-	integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ=="
-	crossorigin="anonymous">
-<link href="../../dist/css/bootstrap.min.css" rel="stylesheet">
-<!-- Custom styles for this template -->
-<link href="signin.css" rel="stylesheet">
+<%@ include file="header.jsp"%>
 
-<!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
-<!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
-<script src="../../assets/js/ie-emulation-modes-warning.js"></script>
 
-<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-<!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
-</head>
-<body style="background-color: white">
+<c:choose>
+	<c:when test="${buyerUser.adminFlag == '1' }">
 
-	<div class="container">
-		<nav class="navbar navbar-default">
-		<div class="container">
-			<div class="container">
-				<div class="navbar-header">
-					<button type="button" class="navbar-toggle collapsed"
-						data-toggle="collapse" data-target="#navbar" aria-expanded="false"
-						aria-controls="navbar">
-						<span class="sr-only">Toggle navigation</span> <span
-							class="icon-bar"></span> <span class="icon-bar"></span> <span
-							class="icon-bar"></span>
-					</button>
-					<a class="navbar-brand">A&D!</a><a class="navbar-brand">Welcome
-						<c:choose>
-							<c:when test="${not empty buyerUser}">
-								<c:out value="${buyerUser.name }" />
-								<a class="navbar-brand" href="onlineServlet?action=history">Purchase
-									History</a>
-							</c:when>
-							<c:otherwise>
-					Guest User</c:otherwise>
-						</c:choose>
-					</a> <a class="navbar-brand" href="onlineServlet?action=cart">Shopping
-						Cart</a>
-					<c:if test="${not empty buyerUser }">
-						<a class="navbar-brand" href="onlineServlet?action=logout">Logout</a>
-					</c:if>
+				<form action="onlineServlet?action=removeProduct" method="POST">
+			<input type="hidden" name="product_id"
+				value="<c:out value="${productBean.product_id}" />" />
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<c:out value="${productBean.name}" />
 				</div>
+				<div class="panel-body">
+					<table class="table">
+						<thead>
+							<th>Description</th>
+							<th>Price</th>
+							<th>Category</th>
+							<th>Quantity</th>
+						</thead>
+						<tbody>
 
+							<tr>
+
+								<td><c:out value="${productBean.description}" /></td>
+								<td><c:out value="${productBean.price}" /></td>
+
+								<td><c:out value="${productBean.category}" /></td>
+								<td><c:out value="${productBean.quantity}" /></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<button class="btn btn-success" >Remove Product</button><br>
 			</div>
-		</div>
-		</nav>
-		</br>
-		
-		
+		</form>
+	</c:when>
+	<c:otherwise>
 		<form action="onlineServlet?action=purchase" method="POST">
 			<input type="hidden" name="product_id"
 				value="<c:out value="${productBean.product_id}" />" />
@@ -99,37 +65,85 @@
 							</tr>
 						</tbody>
 					</table>
-
-
-					<button class="btn btn-success">Add to Cart</button>
+				</div>
+				<button class="btn btn-success">Add to Cart</button>
 		</form>
-		
-		<a class="btn btn-success" href="onlineServlet?action=continue">Continue
-			Shopping</a>
+		</div>
+	</c:otherwise>
 
+</c:choose>
+
+<div class="panel panel-default">
+	<div class="panel-heading">Rates and Reviews</div>
+	<div class="panel-body">
+		<c:choose>
+			<c:when test="${not empty reviewList }">
+				<table class="table">
+					<thead>
+						<th>Username</th>
+						<th>Date</th>
+						<th>Review</th>
+						<th>Rate</th>
+					</thead>
+					<tbody>
+						<c:forEach var="review" items="${reviewList}">
+							<tr>
+
+								<td>${review.buyer.username}</td>
+								<td>${review.reviewDate}</td>
+								<td>${review.text}</td>
+								<td>${review.stars}</td>
+							</tr>
+						</c:forEach>
+					</tbody>
+				</table>
+			</c:when>
+			<c:otherwise>
+				<p>There are no reviews on this product yet.</p>
+			</c:otherwise>
+		</c:choose>
 	</div>
+</div>
+<c:if test="${not empty buyerUser }">
+	<c:if test="${buyerUser.adminFlag == '0'}">
+		<form action="onlineServlet?action=review" method="POST">
+			<input type="hidden" name="product_id"
+				value="<c:out value="${productBean.product_id}" />" /> <input
+				type="hidden" name="buyer_username"
+				value="<c:out value="${buyerUser.username}" />" />
 
-	</div>
+			<div class="panel panel-default">
+				<div class="panel panel-heading">Add a Review</div>
+
+				<div class="panel-body">
+					<div class="form-group">
+						<input type="name" class="form-control" name="review"
+							id="exampleInputname"
+							placeholder="Write Your Review (140 Character)">
+					</div>
+
+					<div class="form-group">
+						<input type="name" class="form-control" name="stars"
+							id="exampleInputPassword1" placeholder="How many stars">
+					</div>
+
+
+					<button type="submit" class="btn btn-success">Add Review</button>
+				</div>
+			</div>
+
+
+		</form>
+	</c:if>
+</c:if>
+<a class="btn btn-success" href="onlineServlet?action=continue"> <c:choose>
+		<c:when test="${buyerUser.adminFlag == '1' }">Products List</c:when>
+		<c:otherwise>Continue Shopping</c:otherwise>
+	</c:choose>
+</a>
 
 
 
 
 
-
-
-
-	</div>
-
-	<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-	<script
-		src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-	<!-- Include all compiled plugins (below), or include individual files as needed -->
-	<script
-		src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"
-		integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ=="
-		crossorigin="anonymous"></script>
-</body>
-
-
-</html>
+<%@ include file="footer.jsp"%>
